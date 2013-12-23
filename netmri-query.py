@@ -13,8 +13,8 @@ VERSION = '2.8'
 
 def make_req():
     r = requests.get('https://' + ADDRESS + PATH + VERSION + '/end_host_mac_addresses/search.json?MACAddress=18:03:73:C9:A8:52&sort=EndHostMACAddressTimestamp', auth=(USERNAME, PASSWORD), verify=VERIFY)
-#    foo = r.json()
-    bar = r['end_host_mac_addresses'].pop()
+    foo = r.json()
+    bar = foo['end_host_mac_addresses'].pop()
     
     print json.dumps(bar, sort_keys=True, indent=4, separators=(',',': '))
 
