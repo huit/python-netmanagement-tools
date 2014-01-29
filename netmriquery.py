@@ -40,3 +40,16 @@ class NetMRIConn:
             return None
 
 
+    def getlastseenbyip(self, ipaddr):
+
+        # gets the most recent time seen from netmri for a given mac address
+        # returns none if mac address is not seen
+
+        r = requests.get('https://' + self.address + self.path + self.version + '/end_host_mac_addresses/search.json?IPAddress=' + ipaddr + '&sort=EndHostMACAddressTimestamp', auth=(self.username, self.password), verify=self.verify)
+        foo = r.json()
+        if foo['current'] != 0:
+            return foo['end_host_mac_addresses'].pop()
+        else:
+            return None
+
+
