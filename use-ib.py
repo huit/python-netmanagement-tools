@@ -7,21 +7,20 @@ def main():
     ib = ibquery.InfobloxConn('ib.cfg')
     netmri = netmriquery.NetMRIConn('netmri.cfg')
 
-    r = ib.getfixedaddr('128.103.209', 'ipv4addr,network,mac', 10000)
-    print 'fixed addresses in this range:'
-    print
-    print 'mac addr , fixed ip , last seen date , last seen ip'
+    r = ib.getfixedaddr('10.243.37', 'ipv4addr,network,mac', 10000)
+    print 'mac addr , fixed ip , last seen date , last seen ip, mac last seen at fixed ip'
     for i in r:
-        lastseen = netmri.getlastseenbymac(i['mac'])
+        lastseenbymac = netmri.getlastseenbymac(i['mac'])
+        lastseenbyip = netmri.getlastseenbyip(i['ipv4addr'])
         print i['mac'] + "," + i['ipv4addr'] + ",",
-        if lastseen != None:
-            print lastseen['EndHostMACAddressStartTime'] + "," + lastseen['IPAddress']
+        if lastseenbymac != None:
+            print lastseenbymac['EndHostMACAddressStartTime'] + "," + lastseenbymac['IPAddress'] + ",",
         else:
-            print 'none'
-
-    print
-    
-
+            print ',,',
+        if lastseenbyip != None:
+            print lastseenbyip['MACAddress']
+        else:
+            print ''
 
 if __name__ == '__main__':
     sys.exit(main())

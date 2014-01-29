@@ -3,27 +3,39 @@ import sys
 import json
 import requests
 import pprint
+import ConfigParser
 
-ADDRESS = '10.240.128.225'
-USERNAME = 'rancid'
-PASSWORD = 'h4k2dJm6'
-PATH = '/api/'
-VERIFY = False
-VERSION = '2.8'
+class NetMRIConn:
+    def __init__(self, conffile):
+        config = ConfigParser.ConfigParser()
+        try:
+            config.read(conffile)
+        except:
+            print "failed opening config file, giving up"
+            sys.exit(0)
+        try:
+            self.address = config.get('NetMRI', 'address')
+            self.username = config.get('NetMRI', 'username')
+            self.path = config.get('NetMRI', 'path')
+            self.password = config.get('NetMRI', 'password')
+            self.version = config.get('NetMRI', 'version')
+            if config.get('NetMRI', 'verify') == 'True':
+                self.verify = True
+            else:
+                self.verify = False
+        except:
+            print "conf file appears to be corrupt or does not contain all needed values to set up IB connection"
+            sys.exit(0)
 
-def make_req():
-    r = requests.get('https://' + ADDRESS + PATH + VERSION + '/end_host_mac_addresses/search.json?MACAddress=18:03:73:C9:A8:52&sort=EndHostMACAddressTimestamp', auth=(USERNAME, PASSWORD), verify=VERIFY)
-    foo = r.json()
-    bar = foo['end_host_mac_addresses'].pop()
-    
-    print json.dumps(bar, sort_keys=True, indent=4, separators=(',',': '))
-
-#    r = requests.get('https://' + ADDRESS + PATH + VERSION + '/neighbors/device.json?NeighborID=25288631', auth=(USERNAME, PASSWORD), verify=VERIFY)
-#    foo = r.json()
-#    print json.dumps(r.json(), sort_keys=True, indent=4, separators=(',',': '))
+    def gethostlastseen(self, macaddr):
+        r = requests.get('https://' + self.address + self.path + self.version + '/end_host_mac_addresses/search.json?MACAddress=' + macaddr + '&sort=EndHostMACAddressTimestamp', auth=(self.username, self.password), verify=self.verify)
+        foo = r.json()
+        return foo['end_host_mac_addresses'].pop()
 
 def main():
-    make_req()
+    a = NetMRIConn('netmri.cfg')
+    r = a.gethostlastseen('18:03:73:C9:A8:52')
+    print r
 
 if __name__ == '__main__':
     sys.exit(main())
