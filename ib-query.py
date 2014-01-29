@@ -31,11 +31,3 @@ class InfobloxConn:
         r = requests.get('https://' + self.ib_address + self.path + self.version + '/fixedaddress?ipv4addr~=' + addr + '&_return_fields=' + fields + '&_max_results=-' + str(numresults), auth=(self.username, self.password), verify=self.verify)
         return r.json()
 
-def main():
-    a = InfobloxConn('ib.cfg')
-    r = a.getfixedaddr('128.103.209', 'ipv4addr,network,mac', 10000)
-    for i in r:
-        print i
-
-if __name__ == '__main__':
-    sys.exit(main())
