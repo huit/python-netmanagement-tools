@@ -1,0 +1,50 @@
+#!/usr/bin/python
+
+import sys
+import json
+import argparse
+import logging
+
+import netmriquery
+
+def main():
+
+    parser = argparse.ArgumentParser(description='Find information about end hosts',
+                                     epilog='Example: endhost -m 11:22:33:aa:bb:cc')
+    parser.add_argument('--loglevel', dest='loglevel', type=str,
+                        choices = ['DEBUG','INFO','WARNING','ERROR', 'CRITICAL'],
+                        default = 'WARNING',
+                        help='set logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)')
+    parser.add_argument('-m', '--macaddr', dest='macaddr', type=str,
+                        help='end host mac address')
+    args = parser.parse_args()
+
+    macaddr = args.macaddr
+    loglevel = args.loglevel
+    if loglevel == 'DEBUG':
+        logging.basicConfig(level=logging.DEBUG)
+
+    netmri = netmriquery.NetMRIConn('netmri.cfg')
+    r = netmri.getlastseenbymac(macaddr)
+
+    if r is not None:
+        
+        logging.debug (json.dumps(r, separators=(',',':'), sort_keys=True, indent=4))
+        logging.debug (r['NeighborID'])
+        d = netmri.getneighbordevicebyid(str(r['NeighborID']))
+
+        logging.debug (json.dumps(d, separators=(',',':'), sort_keys=True, indent=4))
+
+        e = d['neighbors'].pop()
+
+        logging.debug (json.dumps(d, separators=(',',':'), sort_keys=True, indent=4))
+
+        f = netmri.getdevicebyid(str(e['DeviceID']))
+        print json.dumps(f, separators=(',',':'), sort_keys=True, indent=4)
+
+    else:
+
+        print 'end host not found'
+
+if __name__ == '__main__':
+    sys.exit(main())
