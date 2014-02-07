@@ -53,3 +53,16 @@ class NetMRIConn:
             return None
 
 
+    def getdevicebyid(self, devid):
+        r = requests.get('https://' + self.address + self.path + self.version + '/devices/index.json?DeviceID=' + devid , auth=(self.username, self.password), verify=self.verify)
+        return r.json()
+
+    def getneighbordevicebyid(self, neighbordevid):
+
+        r = requests.get('https://' + self.address + self.path + self.version + '/neighbors/index.json?NeighborID=' + neighbordevid , auth=(self.username, self.password), verify=self.verify)
+        return r.json()
+
+    def getinterfacebyid(self, interfaceid):
+
+        r = requests.get('https://' + self.address + self.path + self.version + '/interfaces/index.json?InterfaceID=' + interfaceid , auth=(self.username, self.password), verify=self.verify)
+        return r.json()

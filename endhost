@@ -10,22 +10,35 @@ import netmriquery
 def main():
 
     parser = argparse.ArgumentParser(description='Find information about end hosts',
-                                     epilog='Example: endhost -m 11:22:33:aa:bb:cc')
+                                     formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     epilog='''
+only one of either -m or -i should be specified
+Example: endhost -m 11:22:33:aa:bb:cc
+Example: endhost -i 128.103.209.90'''
+                                     )
+    
     parser.add_argument('--loglevel', dest='loglevel', type=str,
                         choices = ['DEBUG','INFO','WARNING','ERROR', 'CRITICAL'],
                         default = 'WARNING',
                         help='set logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)')
+    parser.add_argument('-i', '--ip', dest='ipaddr', type=str,
+                        help='end host ip address')
     parser.add_argument('-m', '--macaddr', dest='macaddr', type=str,
                         help='end host mac address')
     args = parser.parse_args()
 
+    ipaddr = args.ipaddr
     macaddr = args.macaddr
     loglevel = args.loglevel
     if loglevel == 'DEBUG':
         logging.basicConfig(level=logging.DEBUG)
 
     netmri = netmriquery.NetMRIConn('netmri.cfg')
-    r = netmri.getlastseenbymac(macaddr)
+
+    if macaddr is not None:
+        r = netmri.getlastseenbymac(macaddr)
+    else:
+        r = netmri.getlastseenbyip(ipaddr)
 
     if r is not None:
         
@@ -37,10 +50,16 @@ def main():
 
         e = d['neighbors'].pop()
 
-        logging.debug (json.dumps(d, separators=(',',':'), sort_keys=True, indent=4))
-
         f = netmri.getdevicebyid(str(e['DeviceID']))
-        print json.dumps(f, separators=(',',':'), sort_keys=True, indent=4)
+        f = f['devices'].pop()
+        logging.debug (json.dumps(f, separators=(',',':'), sort_keys=True, indent=4))
+        print (f['DeviceSysName'])
+
+        f = netmri.getinterfacebyid(str(e['InterfaceID']))
+        f = f['interfaces'].pop()
+        logging.debug (json.dumps(f, separators=(',',':'), sort_keys=True, indent=4))
+        print (f['ifName'])
+          
 
     else:
 
