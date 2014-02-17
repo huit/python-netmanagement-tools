@@ -1,0 +1,38 @@
+#!/usr/bin/python
+import sys
+import argparse
+import logging
+
+import ibquery
+import netmriquery
+import json
+
+def main():
+
+    parser = argparse.ArgumentParser(description='Find information about dhcp leases',
+                                     formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     epilog='''
+Example: getmac -m AA:BB:CC:11:22:33'''
+                                     )
+    
+    parser.add_argument('--loglevel', dest='loglevel', type=str,
+                        choices = ['DEBUG','INFO','WARNING','ERROR', 'CRITICAL'],
+                        default = 'WARNING',
+                        help='set logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)')
+    parser.add_argument('-m', '--mac', dest='macaddr', type=str,
+                        help='end host mac address')
+    args = parser.parse_args()
+
+    macaddr = args.macaddr
+    loglevel = args.loglevel
+    if loglevel == 'DEBUG':
+        logging.basicConfig(level=logging.DEBUG)
+
+    ib = ibquery.InfobloxConn('ib.cfg')
+    netmri = netmriquery.NetMRIConn('netmri.cfg')
+
+    r = ib.getmacfilteraddress(macaddr, 'filter,is_registered_user,mac,username', 10000)
+    json.dumps(r, separators=(',',':'), sort_keys=True, indent=4)
+
+if __name__ == '__main__':
+    sys.exit(main())
