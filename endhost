@@ -21,12 +21,15 @@ Example: endhost -i 128.103.209.90'''
                         choices = ['DEBUG','INFO','WARNING','ERROR', 'CRITICAL'],
                         default = 'WARNING',
                         help='set logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)')
-    parser.add_argument('-i', '--ip', dest='ipaddr', type=str,
+    devicein = parser.add_mutually_exclusive_group()
+    devicein.add_argument('-i', '--ip', dest='ipaddr', type=str,
                         help='end host ip address')
-    parser.add_argument('-m', '--macaddr', dest='macaddr', type=str,
+    devicein.add_argument('-m', '--macaddr', dest='macaddr', type=str,
                         help='end host mac address')
     args = parser.parse_args()
 
+    if not (args.ipaddr or args.macaddr):
+        parser.error('No device information provided, one of -i or -m required')
     ipaddr = args.ipaddr
     macaddr = args.macaddr
     loglevel = args.loglevel
