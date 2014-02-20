@@ -39,26 +39,26 @@ Example: endhost -i 128.103.209.90'''
     netmri = netmriquery.NetMRIConn('netmri.cfg')
 
     if macaddr is not None:
-        r = netmri.getlastseenbymac(macaddr)
+        r = netmri.get_endhost_lastseen('MACAddress', macaddr)
     else:
-        r = netmri.getlastseenbyip(ipaddr)
+        r = netmri.get_endhost_lastseen('IPAddress', ipaddr)
 
     if r is not None:
         
         logging.debug (json.dumps(r, separators=(',',':'), sort_keys=True, indent=4))
         logging.debug (r['NeighborID'])
-        d = netmri.getneighbordevicebyid(str(r['NeighborID']))
+        d = netmri.get_neighbordevice('NeighborID', str(r['NeighborID']))
 
         logging.debug (json.dumps(d, separators=(',',':'), sort_keys=True, indent=4))
 
         e = d['neighbors'].pop()
 
-        f = netmri.getdevicebyid(str(e['DeviceID']))
+        f = netmri.get_device('DeviceID', str(e['DeviceID']))
         f = f['devices'].pop()
         logging.debug (json.dumps(f, separators=(',',':'), sort_keys=True, indent=4))
         print (f['DeviceSysName'])
 
-        f = netmri.getinterfacebyid(str(e['InterfaceID']))
+        f = netmri.get_interface('InterfaceID', str(e['InterfaceID']))
         f = f['interfaces'].pop()
         logging.debug (json.dumps(f, separators=(',',':'), sort_keys=True, indent=4))
         print (f['ifName'])

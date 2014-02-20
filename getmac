@@ -21,17 +21,23 @@ Example: getmac -m AA:BB:CC:11:22:33'''
                         help='set logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)')
     parser.add_argument('-m', '--mac', dest='macaddr', type=str,
                         help='end host mac address')
+    parser.add_argument('-ibconf', dest='ibconf', type=str,
+                        help='infoblox library config file path',
+                        default = 'ib.cfg')
     args = parser.parse_args()
+    if not (args.macaddr):
+        parser.error('No mac address provided, -m is required')
 
     macaddr = args.macaddr
+    ibconf = args.ibconf
     loglevel = args.loglevel
+
     if loglevel == 'DEBUG':
         logging.basicConfig(level=logging.DEBUG)
 
-    ib = ibquery.InfobloxConn('ib.cfg')
-    netmri = netmriquery.NetMRIConn('netmri.cfg')
+    ib = ibquery.InfobloxConn(ibconf)
 
-    r = ib.getmacfilteraddress(macaddr, 'filter,is_registered_user,mac,username', 10000)
+    r = ib.get_macfilteraddress('mac', macaddr, 10)
     json.dumps(r, separators=(',',':'), sort_keys=True, indent=4)
 
 if __name__ == '__main__':

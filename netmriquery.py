@@ -27,42 +27,29 @@ class NetMRIConn:
             print "conf file appears to be corrupt or does not contain all needed values to set up NetMRI connection"
             sys.exit(0)
 
-    def getlastseenbymac(self, macaddr):
+    def get_device(self, keyfield, key):
+        r = requests.get('https://' + self.address + self.path + self.version + '/devices/index.json?' + keyfield + '=' + key, auth=(self.username, self.password), verify=self.verify)
+        return r.json()
+
+    def get_interface(self, keyfield, key):
+
+        r = requests.get('https://' + self.address + self.path + self.version + '/interfaces/index.json?' + keyfield + '=' + key, auth=(self.username, self.password), verify=self.verify)
+        return r.json()
+
+    def get_endhost_lastseen(self, keyfield, key):
 
         # gets the most recent time seen from netmri for a given mac address
         # returns none if mac address is not seen
 
-        r = requests.get('https://' + self.address + self.path + self.version + '/end_host_mac_addresses/search.json?MACAddress=' + macaddr + '&sort=EndHostMACAddressTimestamp', auth=(self.username, self.password), verify=self.verify)
-        foo = r.json()
-        if foo['current'] != 0:
-            return foo['end_host_mac_addresses'].pop()
+        r = requests.get('https://' + self.address + self.path + self.version + '/end_host_mac_addresses/index.json?' + keyfield + '=' + key + '&sort=EndHostMACAddressTimestamp', auth=(self.username, self.password), verify=self.verify)
+        r = r.json()
+        if r['current'] != 0:
+            return r['end_host_mac_addresses'].pop()
         else:
             return None
 
+    def get_neighbordevice(self, keyfield, key):
 
-    def getlastseenbyip(self, ipaddr):
-
-        # gets the most recent time seen from netmri for a given mac address
-        # returns none if mac address is not seen
-
-        r = requests.get('https://' + self.address + self.path + self.version + '/end_host_mac_addresses/search.json?IPAddress=' + ipaddr + '&sort=EndHostMACAddressTimestamp', auth=(self.username, self.password), verify=self.verify)
-        foo = r.json()
-        if foo['current'] != 0:
-            return foo['end_host_mac_addresses'].pop()
-        else:
-            return None
-
-
-    def getdevicebyid(self, devid):
-        r = requests.get('https://' + self.address + self.path + self.version + '/devices/index.json?DeviceID=' + devid , auth=(self.username, self.password), verify=self.verify)
+        r = requests.get('https://' + self.address + self.path + self.version + '/neighbors/index.json?' + keyfield + '=' + key, auth=(self.username, self.password), verify=self.verify)
         return r.json()
 
-    def getneighbordevicebyid(self, neighbordevid):
-
-        r = requests.get('https://' + self.address + self.path + self.version + '/neighbors/index.json?NeighborID=' + neighbordevid , auth=(self.username, self.password), verify=self.verify)
-        return r.json()
-
-    def getinterfacebyid(self, interfaceid):
-
-        r = requests.get('https://' + self.address + self.path + self.version + '/interfaces/index.json?InterfaceID=' + interfaceid , auth=(self.username, self.password), verify=self.verify)
-        return r.json()

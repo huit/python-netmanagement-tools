@@ -21,26 +21,49 @@ Example: getlease -i 128.103.209.90'''
                         help='set logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)')
     parser.add_argument('-i', '--ip', dest='ipaddr', type=str,
                         help='end host ip address')
+    parser.add_argument('-ibconf', dest='ibconf', type=str,
+                        help='infoblox library config file path',
+                        default = 'ib.cfg')
+    parser.add_argument('-netmriconf', dest='netmriconf', type=str,
+                        help='netmri library config file path',
+                        default = 'netmri.cfg')
+
     args = parser.parse_args()
+    if not (args.ipaddr):
+        parser.error('No ip address provided, -i <ipaddr> is required')
 
     ipaddr = args.ipaddr
     loglevel = args.loglevel
+    ibconf = args.ibconf
+    netmriconf = args.netmriconf
     if loglevel == 'DEBUG':
         logging.basicConfig(level=logging.DEBUG)
 
-    ib = ibquery.InfobloxConn('ib.cfg')
-    netmri = netmriquery.NetMRIConn('netmri.cfg')
+    ib = ibquery.InfobloxConn(ibconf)
+    netmri = netmriquery.NetMRIConn(netmriconf)
 
-    r = ib.getleasebyip(ipaddr, 'address,billing_class,binding_state,client_hostname,cltt,discovered_data,ends,hardware,network,network_view,never_ends,never_starts,next_binding_state,on_commit,on_expiry,on_release,option,protocol,served_by,server_host_name,starts,tsfp,tstp,uid,username,variable', 10000)
-    if r is not None:
-        logging.debug (json.dumps(r, separators=(',',':'), sort_keys=True, indent=4))
-        for i in r:
-            print i['address'] + ',' + i['username'] + ',' + i['variable'] + ',',
-            netdev = i['discovered_data']
-            print netdev['network_component_name'] + ',' + netdev['network_component_port_name'] + ',',
-            print netdev['network_component_port_description'] + ',' + netdev['port_vlan_name'] + ',' + str(netdev['port_vlan_number'])
-    else:
-        print 'no lease information found for that address'
+    r = ib.get_lease ('address', ipaddr, 10000)
+    logging.debug ('dhcp lease information')
+    logging.debug (json.dumps(r, separators=(',',':'), sort_keys=True, indent=4))
+#    for i in r:
+#        if i.has_key('discovered_data'):
+#            netdev = i['discovered_data']
+#            print netdev['network_component_name'] + ',' + netdev['network_component_port_name'] + ',',
+#            print netdev['network_component_port_description'] + ',' + netdev['port_vlan_name'] + ',' + str(netdev['port_vlan_number'])
+#        else:
+#            print #need to clear to newline...
+
+    r = ib.get_fixedaddress ('ipv4addr', ipaddr, 10000)
+    logging.debug ('fixedaddress information')
+    logging.debug (json.dumps(r, separators=(',',':'), sort_keys=True, indent=4))
+#    for i in r:
+#        print 'fixed,' + i['ipv4addr'] + ',' + i['mac'] +',',
+#        if i.has_key('discovered_data'):
+#            netdev = i['discovered_data']
+#            print netdev['network_component_name'] + ',' + netdev['network_component_port_name'] + ',',
+#            print netdev['network_component_port_description'] + ',' + netdev['port_vlan_name'] + ',' + str(netdev['port_vlan_number'])
+#        else:
+#            print #need to clear to newline....
 
 if __name__ == '__main__':
     sys.exit(main())

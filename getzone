@@ -19,28 +19,31 @@ Example: getzone -z huit.harvard.edu'''
                         choices = ['DEBUG','INFO','WARNING','ERROR', 'CRITICAL'],
                         default = 'WARNING',
                         help='set logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)')
-    parser.add_argument('-z', '--zone', dest='zone', type=str,
-                        help='authoritative zone information')
     parser.add_argument('-f' '-conffile', dest='conffile', type=str,
                         help='infoblox library config file path',
                         default = 'ib.cfg')
+    parser.add_argument('-v', dest='verbose', action="store_true",
+                        help='verbose mode')
+    parser.add_argument('-z', '--zone', dest='zone', type=str,
+                        help='authoritative zone information')
     
     args = parser.parse_args()
 
     zone = args.zone
-    loglevel = args.loglevel
     conffile = args.conffile
-    if loglevel == 'DEBUG':
+    loglevel = args.loglevel
+    verbose = args.verbose
+    if (loglevel == 'DEBUG' or verbose):
         logging.basicConfig(level=logging.DEBUG)
 
     ib = ibquery.InfobloxConn(conffile)
     netmri = netmriquery.NetMRIConn('netmri.cfg')
 
-    r = ib.getauthzone(zone, 'address,view')
+    r = ib.get_zone_auth('fqdn', zone)
     logging.debug ('authoritative zone information')
     logging.debug (json.dumps(r, separators=(',',':'), sort_keys=True, indent=4))
 
-    r = ib.getdelegatedzone(zone, 'address,delegate_to,view')
+    r = ib.get_zone_delegated ('fqdn', zone)
     logging.debug ('delegated zone information')
     logging.debug (json.dumps(r, separators=(',',':'), sort_keys=True, indent=4))
 
