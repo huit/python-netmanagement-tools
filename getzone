@@ -1,11 +1,17 @@
 #!/usr/bin/python
-import sys
+
+import os, sys
 import argparse
 import logging
-
-import ibquery
-import netmriquery
 import json
+
+netmripath=os.path.abspath('../python-netmriconn')
+sys.path.append(netmripath)
+import netmriconn
+
+ibpath=os.path.abspath('../python-ibconn')
+sys.path.append(ibpath)
+import ibconn
 
 def main():
 
@@ -36,8 +42,8 @@ Example: getzone -z huit.harvard.edu'''
     if (loglevel == 'DEBUG' or verbose):
         logging.basicConfig(level=logging.DEBUG)
 
-    ib = ibquery.InfobloxConn(conffile)
-    netmri = netmriquery.NetMRIConn('netmri.cfg')
+    ib = ibconn.ibconn(conffile)
+    netmri = netmriconn.netmriconn('netmri.cfg')
 
     r = ib.get_zone_auth('fqdn', zone)
     logging.debug ('authoritative zone information')

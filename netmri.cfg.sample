@@ -1,7 +1,0 @@
-[NetMRI]
-address = netmri.foo.corp
-username = username
-path = /api/
-password = password
-version = 2.8
-verify = True
