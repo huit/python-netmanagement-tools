@@ -5,13 +5,7 @@ import argparse
 import logging
 import json
 
-netmripath=os.path.abspath('../python-netmriconn')
-sys.path.append(netmripath)
-import netmriconn
-
-ibpath=os.path.abspath('../python-ibconn')
-sys.path.append(ibpath)
-import ibconn
+from ibconn import ibconn
 
 def main():
 
@@ -25,9 +19,9 @@ Example: getzone -z huit.harvard.edu'''
                         choices = ['DEBUG','INFO','WARNING','ERROR', 'CRITICAL'],
                         default = 'WARNING',
                         help='set logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)')
-    parser.add_argument('-f' '-conffile', dest='conffile', type=str,
-                        help='infoblox library config file path',
-                        default = 'ib.cfg')
+    parser.add_argument('--ibconf', dest='conffile', type=str,
+                        default = os.path.expanduser("~") + '/.ib.cfg',
+                        help='infoblox library config file path')
     parser.add_argument('-v', dest='verbose', action="store_true",
                         help='verbose mode')
     parser.add_argument('-z', '--zone', dest='zone', type=str,
@@ -35,15 +29,18 @@ Example: getzone -z huit.harvard.edu'''
     
     args = parser.parse_args()
 
+    if not (args.zone):
+        parser.error('No zone requested, -z required')
+
     zone = args.zone
     conffile = args.conffile
     loglevel = args.loglevel
     verbose = args.verbose
+
     if (loglevel == 'DEBUG' or verbose):
         logging.basicConfig(level=logging.DEBUG)
 
     ib = ibconn.ibconn(conffile)
-    netmri = netmriconn.netmriconn('netmri.cfg')
 
     r = ib.get_zone_auth('fqdn', zone)
     logging.debug ('authoritative zone information')

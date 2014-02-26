@@ -5,13 +5,7 @@ import json
 import argparse
 import logging
 
-netmripath=os.path.abspath('../python-netmriconn')
-sys.path.append(netmripath)
-import netmriconn
-
-ibpath=os.path.abspath('../python-ibconn')
-sys.path.append(ibpath)
-import ibconn
+from netmriconn import netmriconn
 
 def main():
 
@@ -32,17 +26,22 @@ Example: endhost -i 128.103.209.90'''
                         help='end host ip address')
     devicein.add_argument('-m', '--macaddr', dest='macaddr', type=str,
                         help='end host mac address')
+    parser.add_argument('--netmriconf', dest='conffile', type=str,
+                        default = os.path.expanduser("~") + '/.netmri.cfg',
+                        help='netmriconn config file')
     args = parser.parse_args()
 
     if not (args.ipaddr or args.macaddr):
         parser.error('No device information provided, one of -i or -m required')
+    conffile = args.conffile
     ipaddr = args.ipaddr
-    macaddr = args.macaddr
     loglevel = args.loglevel
+    macaddr = args.macaddr
+
     if loglevel == 'DEBUG':
         logging.basicConfig(level=logging.DEBUG)
 
-    netmri = netmriconn.netmriconn('netmri.cfg')
+    netmri = netmriconn.netmriconn(conffile)
 
     if macaddr is not None:
         r = netmri.get_endhost_lastseen('MACAddress', macaddr)
@@ -57,7 +56,11 @@ Example: endhost -i 128.103.209.90'''
 
         logging.debug (json.dumps(d, separators=(',',':'), sort_keys=True, indent=4))
 
-        e = d['neighbors'].pop()
+        try:
+            e = d['neighbors'].pop()
+        except:
+            print ('no neighbor found, mac/ip appears to be disconnected from the network')
+            sys.exit(1)
 
         f = netmri.get_device('DeviceID', str(e['DeviceID']))
         f = f['devices'].pop()
